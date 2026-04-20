@@ -25,22 +25,24 @@ async function apiFetch(path, options = {}) {
 }
 
 async function cleanupOldEntries() {
+    console.log("in cleanup1");
     const cutoff = new Date(Date.now() - 3.5 * 60 * 60 * 1000).toISOString();
-
+    console.log("in cleanup2");    
     const old = await apiFetch(
         `/entries?select=entryid,entrytype,entrydescr,entrydate,entrylocx,entrylocy,numofrep,reportstatus&entrydate=lt.${cutoff}`
     );
-
+    console.log("in cleanup3");    
     if (!old || old.length === 0) return;
-
+    console.log("in cleanup4");     
     await apiFetch('/oldentries', {
         method: 'POST',
         body: JSON.stringify(old)
     });
-
+    console.log("in cleanup5");    
     await apiFetch(`/entries?entrydate=lt.${cutoff}`, {
         method: 'DELETE'
     });
+    console.log("in cleanup6");    
 }
 
 function getQueryParam(name) {
@@ -69,6 +71,7 @@ function formatDate(value) {
 }
 
 function initIndexPage() {
+    console.log("now going into cleanup");
     cleanupOldEntries().catch(() => {}); 
     const map = document.getElementById('map');
     const overlay = document.getElementById('marker-layer');
