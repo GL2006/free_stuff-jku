@@ -69,7 +69,7 @@ function initIndexPage() {
 async function loadMapEntries() {
     try {
         setStatus('Loading...', false, 'status');
-        const path = '/entries?select=entryID,entryType,entryLocX,entryLocY&or=(numOfRep.lte.5,reportStatus.eq.1)';
+        const path = '/entries?select=entryid,entrytype,entrylocx,entrylocy&or=(numofrep.lte.5,reportstatus.eq.1)';
         const entries = await apiFetch(path);
         renderMapEntries(entries || []);
         clearStatus('status');
@@ -151,7 +151,7 @@ async function initDetailPage() {
 
     try {
         setStatus('Loading...', false);
-        const path = `/entries?select=entryID,entryType,entryDescr,entryDate,numOfRep&entryID=eq.${encodeURIComponent(id)}`;
+        const path = `/entries?select=entryid,entrytype,entrydescr,entrydate,numofrep&entryid=eq.${encodeURIComponent(id)}`;
         const data = await apiFetch(path);
         const entry = data[0];
         if (!entry) {
@@ -197,7 +197,7 @@ async function loadCurrentEntries() {
     const statusElement = 'current-status';
     try {
         setStatus('Loading...', false, statusElement);
-        const path = '/entries?select=entryID,entryType,entryDescr,entryDate,entryLocX,entryLocY,numOfRep,reportStatus&order=entryID.asc';
+        const path = '/entries?select=entryid,entrytype,entrydescr,entrydate,entrylocx,entrylocy,numofrep,reportstatus&order=entryid.asc';
         const entries = await apiFetch(path);
         renderRows(tableBody, entries || []);
         clearStatus(statusElement);
@@ -211,7 +211,7 @@ async function loadOldEntries() {
     const statusElement = 'old-status';
     try {
         setStatus('Loading...', false, statusElement);
-        const path = '/oldEntries?select=oldEntryID,entryType,entryDescr,entryDate,entryLocX,entryLocY,numOfRep,reportStatus&order=oldEntryID.asc';
+        const path = '/oldEntries?select=oldEntryid,entrytype,entrydescr,entrydate,entrylocx,entrylocy,numofrep,reportstatus&order=oldEntryid.asc';
         const entries = await apiFetch(path);
         renderRows(tableBody, entries || [], true);
         clearStatus(statusElement);
