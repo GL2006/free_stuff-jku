@@ -69,6 +69,7 @@ function formatDate(value) {
 }
 
 function initIndexPage() {
+    cleanupOldEntries().catch(() => {}); 
     const map = document.getElementById('map');
     const overlay = document.getElementById('marker-layer');
 
