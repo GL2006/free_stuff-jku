@@ -62,6 +62,8 @@ async function cleanupOldEntries() {
     );
 
     console.log("in cleanup6");
+    console.log("cleanup finished → reloading");
+    window.location.reload();
 }
 
 function getQueryParam(name) {
