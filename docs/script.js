@@ -2,12 +2,35 @@ const SUPABASE_URL = "https://thcaddvxtnhpumqhyxsu.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_N2d3qVdYaUYU6ajEdSSTog_rAB0DKgH";
 const API_BASE = `${SUPABASE_URL}/rest/v1`;
 
+/* ===================== CLEANUP (3.5h -> oldentries) ===================== */
+
+async function cleanupOldEntries() {
+    const cutoff = new Date(Date.now() - 3.5 * 60 * 60 * 1000).toISOString();
+
+    const old = await apiFetch(
+        `/entries?select=entryid,entrytype,entrydescr,entrydate,entrylocx,entrylocy,numofrep,reportstatus&entrydate=lt.${cutoff}`
+    );
+
+    if (!old || old.length === 0) return;
+
+    await apiFetch('/oldentries', {
+        method: 'POST',
+        body: JSON.stringify(old)
+    });
+
+    await apiFetch(`/entries?entrydate=lt.${cutoff}`, {
+        method: 'DELETE'
+    });
+}
+
+/* ===================== SUPABASE API ===================== */
+
 function getHeaders() {
     return {
         "Content-Type": "application/json",
         "apikey": SUPABASE_ANON_KEY,
         "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
-        "Prefer": "return=minimal"
+        "Prefer": "return=representation"
     };
 }
 
@@ -16,13 +39,20 @@ async function apiFetch(path, options = {}) {
         headers: getHeaders(),
         ...options
     });
+
     const contentType = response.headers.get('content-type') || '';
-    const body = contentType.includes('application/json') ? await response.json() : null;
+    const body = contentType.includes('application/json')
+        ? await response.json()
+        : null;
+
     if (!response.ok) {
         throw new Error(body?.message || `${response.status} ${response.statusText}`);
     }
+
     return body;
 }
+
+/* ===================== UTIL ===================== */
 
 function getQueryParam(name) {
     return new URLSearchParams(window.location.search).get(name);
@@ -46,22 +76,27 @@ function formatDate(value) {
     if (!value) return '';
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return value;
-    return date.toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' });
+    return date.toLocaleString('de-DE', {
+        dateStyle: 'short',
+        timeStyle: 'short'
+    });
 }
 
-function initIndexPage() {
-    const map = document.getElementById('map');
-    const overlay = document.getElementById('marker-layer');
+/* ===================== INDEX PAGE ===================== */
 
+async function initIndexPage() {
+    const map = document.getElementById('map');
+
+    await cleanupOldEntries();
     loadMapEntries();
 
-    map.addEventListener('click', function(event) {
-        if (event.target.classList.contains('marker')) {
-            return;
-        }
+    map.addEventListener('click', function (event) {
+        if (event.target.classList.contains('marker')) return;
+
         const rect = map.getBoundingClientRect();
         const x = Math.round(((event.clientX - rect.left) / rect.width) * 100);
         const y = Math.round(100 - ((event.clientY - rect.top) / rect.height) * 100);
+
         window.location.href = `add.html?entrylocx=${x}&entrylocy=${y}`;
     });
 }
@@ -69,8 +104,10 @@ function initIndexPage() {
 async function loadMapEntries() {
     try {
         setStatus('Loading...', false, 'status');
+
         const path = '/entries?select=entryid,entrytype,entrylocx,entrylocy&or=(numofrep.lte.5,reportstatus.eq.1)';
         const entries = await apiFetch(path);
+
         renderMapEntries(entries || []);
         clearStatus('status');
     } catch (error) {
@@ -81,22 +118,30 @@ async function loadMapEntries() {
 function renderMapEntries(entries) {
     const overlay = document.getElementById('marker-layer');
     if (!overlay) return;
+
     overlay.innerHTML = '';
+
     entries.forEach(entry => {
         const marker = document.createElement('a');
         marker.className = 'marker';
         marker.href = `detail.html?id=${encodeURIComponent(entry.entryid)}`;
         marker.textContent = entry.entrytype;
+
         marker.style.left = `${Math.max(0, Math.min(100, entry.entrylocx))}%`;
         marker.style.top = `${Math.max(0, Math.min(100, 100 - entry.entrylocy))}%`;
+
         marker.title = `${entry.entrytype} (#${entry.entryid})`;
+
         overlay.appendChild(marker);
     });
 }
 
+/* ===================== ADD PAGE ===================== */
+
 function initAddPage() {
     const x = getQueryParam('entrylocx');
     const y = getQueryParam('entrylocy');
+
     const coords = document.getElementById('coords');
     const submitButton = document.getElementById('submit-button');
 
@@ -107,8 +152,8 @@ function initAddPage() {
     }
 
     coords.textContent = `Selected location: X=${x}, Y=${y}`;
-    const form = document.getElementById('add-form');
-    form.addEventListener('submit', async function(event) {
+
+    document.getElementById('add-form').addEventListener('submit', async (event) => {
         event.preventDefault();
         await submitNewEntry(x, y);
     });
@@ -118,12 +163,14 @@ async function submitNewEntry(x, y) {
     try {
         const type = document.getElementById('entrytype').value;
         const descr = document.getElementById('entrydescr').value.trim();
+
         if (descr.length < 5) {
             setStatus('Description needs at least 5 characters.', true);
             return;
         }
 
         setStatus('Saving...', false);
+
         const body = JSON.stringify([{
             entrytype: type,
             entrydescr: descr,
@@ -133,17 +180,22 @@ async function submitNewEntry(x, y) {
             numofrep: 0,
             reportstatus: 0
         }]);
+
         await apiFetch('/entries', { method: 'POST', body });
+
         window.location.href = 'index.html';
     } catch (error) {
         setStatus(`Error: ${error.message}`, true);
     }
 }
 
+/* ===================== DETAIL PAGE ===================== */
+
 async function initDetailPage() {
     const id = getQueryParam('id');
     const container = document.getElementById('entry-detail');
     const actions = document.getElementById('detail-actions');
+
     if (!id) {
         container.innerHTML = '<p class="error">No ID.</p>';
         return;
@@ -151,9 +203,12 @@ async function initDetailPage() {
 
     try {
         setStatus('Loading...', false);
+
         const path = `/entries?select=entryid,entrytype,entrydescr,entrydate,numofrep&entryid=eq.${encodeURIComponent(id)}`;
         const data = await apiFetch(path);
+
         const entry = data[0];
+
         if (!entry) {
             container.innerHTML = '<p class="error">Not found.</p>';
             return;
@@ -167,9 +222,11 @@ async function initDetailPage() {
         `;
 
         actions.innerHTML = `<button id="report-button">Report</button>`;
-        document.getElementById('report-button').addEventListener('click', function() {
+
+        document.getElementById('report-button').addEventListener('click', () => {
             reportEntry(entry.entryid, entry.numofrep || 0);
         });
+
         clearStatus();
     } catch (error) {
         setStatus(`Error: ${error.message}`, true);
@@ -179,49 +236,68 @@ async function initDetailPage() {
 async function reportEntry(entryid, currentReports) {
     try {
         setStatus('Reporting...', false);
+
         const body = JSON.stringify({ numofrep: currentReports + 1 });
-        await apiFetch(`/entries?entryid=eq.${encodeURIComponent(entryid)}`, { method: 'PATCH', body });
+
+        await apiFetch(`/entries?entryid=eq.${encodeURIComponent(entryid)}`, {
+            method: 'PATCH',
+            body
+        });
+
         setStatus('Got it. Redirecting...', false);
-        setTimeout(() => window.location.href = 'index.html', 1200);
+
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 1200);
+
     } catch (error) {
         setStatus(`Error: ${error.message}`, true);
     }
 }
 
+/* ===================== LIST PAGE ===================== */
+
 async function initListPage() {
-    await Promise.all([loadCurrentEntries(), loadoldentries()]);
+    await Promise.all([loadCurrentEntries(), loadOldEntries()]);
 }
 
 async function loadCurrentEntries() {
     const tableBody = document.querySelector('#current-table tbody');
-    const statusElement = 'current-status';
+
     try {
-        setStatus('Loading...', false, statusElement);
+        setStatus('Loading...', false, 'current-status');
+
         const path = '/entries?select=entryid,entrytype,entrydescr,entrydate,entrylocx,entrylocy,numofrep,reportstatus&order=entryid.asc';
         const entries = await apiFetch(path);
+
         renderRows(tableBody, entries || []);
-        clearStatus(statusElement);
+        clearStatus('current-status');
+
     } catch (error) {
-        setStatus(`Error: ${error.message}`, true, statusElement);
+        setStatus(`Error: ${error.message}`, true, 'current-status');
     }
 }
 
-async function loadoldentries() {
+async function loadOldEntries() {
     const tableBody = document.querySelector('#old-table tbody');
-    const statusElement = 'old-status';
+
     try {
-        setStatus('Loading...', false, statusElement);
+        setStatus('Loading...', false, 'old-status');
+
         const path = '/oldentries?select=oldentryid,entrytype,entrydescr,entrydate,entrylocx,entrylocy,numofrep,reportstatus&order=oldentryid.asc';
         const entries = await apiFetch(path);
+
         renderRows(tableBody, entries || [], true);
-        clearStatus(statusElement);
+        clearStatus('old-status');
+
     } catch (error) {
-        setStatus(`Error: ${error.message}`, true, statusElement);
+        setStatus(`Error: ${error.message}`, true, 'old-status');
     }
 }
 
 function renderRows(body, rows, isOld = false) {
     body.innerHTML = '';
+
     if (!rows.length) {
         body.innerHTML = `<tr><td colspan="7">No entries found.</td></tr>`;
         return;
@@ -229,6 +305,7 @@ function renderRows(body, rows, isOld = false) {
 
     rows.forEach(row => {
         const tr = document.createElement('tr');
+
         tr.innerHTML = `
             <td>${isOld ? row.oldentryid : row.entryid}</td>
             <td>${row.entrytype}</td>
@@ -238,6 +315,7 @@ function renderRows(body, rows, isOld = false) {
             <td>${row.entrylocy}</td>
             <td>${row.numofrep ?? 0}</td>
         `;
+
         body.appendChild(tr);
     });
 }
