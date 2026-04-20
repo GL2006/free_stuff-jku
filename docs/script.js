@@ -25,48 +25,34 @@ async function apiFetch(path, options = {}) {
 }
 
 async function cleanupOldEntries() {
-    console.log("clean up 1");
-
+    console.log("in cleanup1");
     const cutoff = new Date(Date.now() - 3.5 * 60 * 60 * 1000).toISOString();
-
-    console.log("clean up 2-3");
-
+    console.log("in cleanup2");    
+    console.log("clean up 2-2");
     const old = await apiFetch(
         `/entries?select=entryid,entrytype,entrydescr,entrydate,entrylocx,entrylocy,numofrep,reportstatus&entrydate=lt.${cutoff}`
+        `/entries?select=entrytype,entrydescr,entrydate,entrylocx,entrylocy,numofrep,reportstatus&entrydate=lt.${cutoff}`
     );
+    console.log("in cleanup3");    
 
     if (!old || old.length === 0) return;
-
-    console.log("clean up 3");
-
-    // 🔥 FIX: mappe camelCase DB Schema korrekt
-    const cleaned = old.map(row => ({
-        entryType: row.entrytype,
-        entryDescr: row.entrydescr,
-        entryDate: row.entrydate,
-        entryLocX: row.entrylocx,
-        entryLocY: row.entrylocy,
-        numOfRep: row.numofrep,
-        reportStatus: row.reportstatus
-    }));
-
-    console.log("clean up 4");
-
+    console.log("in cleanup4-2");     
     const res = await apiFetch('/oldentries', {
+    const cleaned = old.map(({ entryid, ...rest }) => rest);
+    console.log("clean up 3-2");
+    await apiFetch('/oldentries', {
         method: 'POST',
+        body: JSON.stringify(old)
         body: JSON.stringify(cleaned)
     });
-
+    
     console.log("insert result:", res);
-
-    console.log("clean up 5");
-
-    await apiFetch(
-        `/entries?entrydate=lt.${cutoff}`,
-        { method: 'DELETE' }
-    );
-
-    console.log("clean up 6 done");
+    console.log("in cleanup5");    
+    console.log("clean up 4-2");
+    await apiFetch(`/entries?entrydate=lt.${cutoff}`, {
+        method: 'DELETE'
+    });
+    console.log("in cleanup6");    
 }
 
 function getQueryParam(name) {
