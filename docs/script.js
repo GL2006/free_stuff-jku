@@ -24,6 +24,25 @@ async function apiFetch(path, options = {}) {
     return body;
 }
 
+async function cleanupOldEntries() {
+    const cutoff = new Date(Date.now() - 3.5 * 60 * 60 * 1000).toISOString();
+
+    const old = await apiFetch(
+        `/entries?select=entryid,entrytype,entrydescr,entrydate,entrylocx,entrylocy,numofrep,reportstatus&entrydate=lt.${cutoff}`
+    );
+
+    if (!old || old.length === 0) return;
+
+    await apiFetch('/oldentries', {
+        method: 'POST',
+        body: JSON.stringify(old)
+    });
+
+    await apiFetch(`/entries?entrydate=lt.${cutoff}`, {
+        method: 'DELETE'
+    });
+}
+
 function getQueryParam(name) {
     return new URLSearchParams(window.location.search).get(name);
 }
@@ -49,7 +68,8 @@ function formatDate(value) {
     return date.toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' });
 }
 
-function initIndexPage() {
+async function initIndexPage() {
+    await cleanupOldEntries();
     const map = document.getElementById('map');
     const overlay = document.getElementById('marker-layer');
 
