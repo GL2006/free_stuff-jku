@@ -62,14 +62,14 @@ function initIndexPage() {
         const rect = map.getBoundingClientRect();
         const x = Math.round(((event.clientX - rect.left) / rect.width) * 100);
         const y = Math.round(100 - ((event.clientY - rect.top) / rect.height) * 100);
-        window.location.href = `add.html?entryLocX=${x}&entryLocY=${y}`;
+        window.location.href = `add.html?entrylocx=${x}&entrylocy=${y}`;
     });
 }
 
 async function loadMapEntries() {
     try {
         setStatus('Loading...', false, 'status');
-        const path = '/entries?select=entryID,entryType,entryLocX,entryLocY&or=(numOfRep.lte.5,reportStatus.eq.1)';
+        const path = '/entries?select=entryid,entrytype,entrylocx,entrylocy&or=(numofrep.lte.5,reportstatus.eq.1)';
         const entries = await apiFetch(path);
         renderMapEntries(entries || []);
         clearStatus('status');
@@ -85,18 +85,18 @@ function renderMapEntries(entries) {
     entries.forEach(entry => {
         const marker = document.createElement('a');
         marker.className = 'marker';
-        marker.href = `detail.html?id=${encodeURIComponent(entry.entryID)}`;
-        marker.textContent = entry.entryType;
-        marker.style.left = `${Math.max(0, Math.min(100, entry.entryLocX))}%`;
-        marker.style.top = `${Math.max(0, Math.min(100, 100 - entry.entryLocY))}%`;
-        marker.title = `${entry.entryType} (#${entry.entryID})`;
+        marker.href = `detail.html?id=${encodeURIComponent(entry.entryid)}`;
+        marker.textContent = entry.entrytype;
+        marker.style.left = `${Math.max(0, Math.min(100, entry.entrylocx))}%`;
+        marker.style.top = `${Math.max(0, Math.min(100, 100 - entry.entrylocy))}%`;
+        marker.title = `${entry.entrytype} (#${entry.entryid})`;
         overlay.appendChild(marker);
     });
 }
 
 function initAddPage() {
-    const x = getQueryParam('entryLocX');
-    const y = getQueryParam('entryLocY');
+    const x = getQueryParam('entrylocx');
+    const y = getQueryParam('entrylocy');
     const coords = document.getElementById('coords');
     const submitButton = document.getElementById('submit-button');
 
@@ -116,8 +116,8 @@ function initAddPage() {
 
 async function submitNewEntry(x, y) {
     try {
-        const type = document.getElementById('entryType').value;
-        const descr = document.getElementById('entryDescr').value.trim();
+        const type = document.getElementById('entrytype').value;
+        const descr = document.getElementById('entrydescr').value.trim();
         if (descr.length < 5) {
             setStatus('Description needs at least 5 characters.', true);
             return;
@@ -125,13 +125,13 @@ async function submitNewEntry(x, y) {
 
         setStatus('Saving...', false);
         const body = JSON.stringify([{
-            entryType: type,
-            entryDescr: descr,
-            entryDate: new Date().toISOString(),
-            entryLocX: Number(x),
-            entryLocY: Number(y),
-            numOfRep: 0,
-            reportStatus: 0
+            entrytype: type,
+            entrydescr: descr,
+            entrydate: new Date().toISOString(),
+            entrylocx: Number(x),
+            entrylocy: Number(y),
+            numofrep: 0,
+            reportstatus: 0
         }]);
         await apiFetch('/entries', { method: 'POST', body });
         window.location.href = 'index.html';
@@ -151,7 +151,7 @@ async function initDetailPage() {
 
     try {
         setStatus('Loading...', false);
-        const path = `/entries?select=entryID,entryType,entryDescr,entryDate,numOfRep&entryID=eq.${encodeURIComponent(id)}`;
+        const path = `/entries?select=entryid,entrytype,entrydescr,entrydate,numofrep&entryid=eq.${encodeURIComponent(id)}`;
         const data = await apiFetch(path);
         const entry = data[0];
         if (!entry) {
@@ -160,15 +160,15 @@ async function initDetailPage() {
         }
 
         container.innerHTML = `
-            <div><strong>Type:</strong> ${entry.entryType}</div>
-            <div><strong>Description:</strong> ${entry.entryDescr}</div>
-            <div><strong>Date:</strong> ${formatDate(entry.entryDate)}</div>
-            <div><strong>Reports:</strong> ${entry.numOfRep ?? 0}</div>
+            <div><strong>Type:</strong> ${entry.entrytype}</div>
+            <div><strong>Description:</strong> ${entry.entrydescr}</div>
+            <div><strong>Date:</strong> ${formatDate(entry.entrydate)}</div>
+            <div><strong>Reports:</strong> ${entry.numofrep ?? 0}</div>
         `;
 
         actions.innerHTML = `<button id="report-button">Report</button>`;
         document.getElementById('report-button').addEventListener('click', function() {
-            reportEntry(entry.entryID, entry.numOfRep || 0);
+            reportEntry(entry.entryid, entry.numofrep || 0);
         });
         clearStatus();
     } catch (error) {
@@ -176,11 +176,11 @@ async function initDetailPage() {
     }
 }
 
-async function reportEntry(entryId, currentReports) {
+async function reportEntry(entryid, currentReports) {
     try {
         setStatus('Reporting...', false);
-        const body = JSON.stringify({ numOfRep: currentReports + 1 });
-        await apiFetch(`/entries?entryID=eq.${encodeURIComponent(entryId)}`, { method: 'PATCH', body });
+        const body = JSON.stringify({ numofrep: currentReports + 1 });
+        await apiFetch(`/entries?entryid=eq.${encodeURIComponent(entryid)}`, { method: 'PATCH', body });
         setStatus('Got it. Redirecting...', false);
         setTimeout(() => window.location.href = 'index.html', 1200);
     } catch (error) {
@@ -197,7 +197,7 @@ async function loadCurrentEntries() {
     const statusElement = 'current-status';
     try {
         setStatus('Loading...', false, statusElement);
-        const path = '/entries?select=entryID,entryType,entryDescr,entryDate,entryLocX,entryLocY,numOfRep,reportStatus&order=entryID.asc';
+        const path = '/entries?select=entryid,entrytype,entrydescr,entrydate,entrylocx,entrylocy,numofrep,reportstatus&order=entryid.asc';
         const entries = await apiFetch(path);
         renderRows(tableBody, entries || []);
         clearStatus(statusElement);
@@ -211,7 +211,7 @@ async function loadOldEntries() {
     const statusElement = 'old-status';
     try {
         setStatus('Loading...', false, statusElement);
-        const path = '/oldEntries?select=oldEntryID,entryType,entryDescr,entryDate,entryLocX,entryLocY,numOfRep,reportStatus&order=oldEntryID.asc';
+        const path = '/oldEntries?select=oldentryid,entrytype,entrydescr,entrydate,entrylocx,entrylocy,numofrep,reportstatus&order=oldentryid.asc';
         const entries = await apiFetch(path);
         renderRows(tableBody, entries || [], true);
         clearStatus(statusElement);
@@ -230,13 +230,13 @@ function renderRows(body, rows, isOld = false) {
     rows.forEach(row => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td>${isOld ? row.oldEntryID : row.entryID}</td>
-            <td>${row.entryType}</td>
-            <td>${row.entryDescr}</td>
-            <td>${formatDate(row.entryDate)}</td>
-            <td>${row.entryLocX}</td>
-            <td>${row.entryLocY}</td>
-            <td>${row.numOfRep ?? 0}</td>
+            <td>${isOld ? row.oldentryid : row.entryid}</td>
+            <td>${row.entrytype}</td>
+            <td>${row.entrydescr}</td>
+            <td>${formatDate(row.entrydate)}</td>
+            <td>${row.entrylocx}</td>
+            <td>${row.entrylocy}</td>
+            <td>${row.numofrep ?? 0}</td>
         `;
         body.appendChild(tr);
     });
