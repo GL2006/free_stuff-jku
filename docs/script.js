@@ -33,7 +33,7 @@ async function cleanupOldEntries() {
     );
     console.log("in cleanup3");    
     if (!old || old.length === 0) return;
-    console.log("in cleanup4");     
+    console.log("in cleanup4-2");     
     const res = await apiFetch('/oldentries', {
         method: 'POST',
         body: JSON.stringify(old)
