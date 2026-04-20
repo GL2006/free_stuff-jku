@@ -1,0 +1,14 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Run App (Maven)",
+            "request": "launch",
+            "mainClass": "com.example.App",
+            "preLaunchTask": "maven: compile",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal"
+        }
+    ]
+}

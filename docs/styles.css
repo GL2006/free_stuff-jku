@@ -1,0 +1,162 @@
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.5;
+    margin: 0;
+    padding: 0;
+    background: #f7f7f7;
+    color: #222;
+}
+
+header,
+footer {
+    padding: 16px;
+    background: #232f3e;
+    color: white;
+}
+
+header h1,
+footer p {
+    margin: 0;
+}
+
+nav {
+    margin-top: 8px;
+}
+
+nav a {
+    color: #ff4444;
+    text-decoration: none;
+    margin-right: 16px;
+}
+
+a {
+    color: #ff4444;
+}
+
+a:visited {
+    color: #cc0000;
+}
+
+main {
+    padding: 20px;
+    max-width: 960px;
+    margin: 0 auto;
+}
+
+.map-container {
+    position: relative;
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    border: 1px solid #ddd;
+    background: white;
+}
+
+.map-container img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.marker-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.marker {
+    position: absolute;
+    padding: 4px 8px;
+    background: rgba(255, 132, 0, 0.95);
+    color: white;
+    border-radius: 4px;
+    font-size: 12px;
+    text-decoration: none;
+    transform: translate(-50%, -100%);
+    pointer-events: auto;
+}
+
+.marker:hover {
+    background: rgb(255, 210, 0);
+}
+
+.status {
+    margin-top: 16px;
+    padding: 12px;
+    border-radius: 6px;
+    background: #eef4ff;
+    color: #1a2930;
+}
+
+.status.error {
+    background: #ffe6e6;
+    color: #7a1414;
+}
+
+.status.success {
+    background: #e6ffed;
+    color: #1e4620;
+}
+
+form {
+    display: grid;
+    row-gap: 12px;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+}
+
+label {
+    display: grid;
+    gap: 6px;
+}
+
+input[type="text"],
+select {
+    padding: 10px;
+    border: 1px solid #bbb;
+    border-radius: 6px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+button {
+    padding: 10px 14px;
+    border: none;
+    border-radius: 6px;
+    background: #ff8400;
+    color: white;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #e96f00;
+}
+
+.entry-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+    background: white;
+}
+
+.entry-table th,
+.entry-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.entry-table th {
+    background: #f2f2f2;
+}
+
+.detail-card,
+.form-card,
+.content-card {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 20px;
+}

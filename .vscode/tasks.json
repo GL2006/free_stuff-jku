@@ -1,0 +1,13 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "maven: compile",
+            "type": "shell",
+            "command": "mvn",
+            "args": ["clean", "compile"],
+            "problemMatcher": "$java",
+            "isBackground": false
+        }
+    ]
+}

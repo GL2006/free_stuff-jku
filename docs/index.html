@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>free_stuff@jku</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>free_stuff@jku</h1>
+        <nav>
+            <a href="list.html">List</a>
+            <a href="about.html">About</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="map-section">
+            <div class="map-container">
+                <img id="map" src="imgs/map.png" alt="Map">
+                <div id="marker-layer" class="marker-layer"></div>
+            </div>
+            <p class="hint">Click anywhere to drop a marker</p>
+        </section>
+
+        <section id="status" class="status"></section>
+    </main>
+
+    <footer>
+        <p>2026, Gernot Lepschy | <a href="mailto:gernotdev282@gmail.com">gernotdev282@gmail.com</a></p>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            initIndexPage();
+        });
+    </script>
+</body>
+</html>
