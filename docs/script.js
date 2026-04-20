@@ -68,8 +68,7 @@ function formatDate(value) {
     return date.toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' });
 }
 
-async function initIndexPage() {
-    await cleanupOldEntries();
+function initIndexPage() {
     const map = document.getElementById('map');
     const overlay = document.getElementById('marker-layer');
 
