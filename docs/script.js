@@ -34,10 +34,12 @@ async function cleanupOldEntries() {
     console.log("in cleanup3");    
     if (!old || old.length === 0) return;
     console.log("in cleanup4");     
-    await apiFetch('/oldentries', {
+    const res = await apiFetch('/oldentries', {
         method: 'POST',
         body: JSON.stringify(old)
     });
+    
+    console.log("insert result:", res);
     console.log("in cleanup5");    
     await apiFetch(`/entries?entrydate=lt.${cutoff}`, {
         method: 'DELETE'
