@@ -189,7 +189,7 @@ async function reportEntry(entryid, currentReports) {
 }
 
 async function initListPage() {
-    await Promise.all([loadCurrentEntries(), loadOldEntries()]);
+    await Promise.all([loadCurrentEntries(), loadoldentries()]);
 }
 
 async function loadCurrentEntries() {
@@ -206,12 +206,12 @@ async function loadCurrentEntries() {
     }
 }
 
-async function loadOldEntries() {
+async function loadoldentries() {
     const tableBody = document.querySelector('#old-table tbody');
     const statusElement = 'old-status';
     try {
         setStatus('Loading...', false, statusElement);
-        const path = '/oldEntries?select=oldentryid,entrytype,entrydescr,entrydate,entrylocx,entrylocy,numofrep,reportstatus&order=oldentryid.asc';
+        const path = '/oldentries?select=oldentryid,entrytype,entrydescr,entrydate,entrylocx,entrylocy,numofrep,reportstatus&order=oldentryid.asc';
         const entries = await apiFetch(path);
         renderRows(tableBody, entries || [], true);
         clearStatus(statusElement);
