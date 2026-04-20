@@ -1,5 +1,5 @@
-const SUPABASE_URL = "https://YOUR_PROJECT.supabase.co";
-const SUPABASE_ANON_KEY = "YOUR_ANON_KEY";
+const SUPABASE_URL = "https://thcaddvxtnhpumqhyxsu.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_N2d3qVdYaUYU6ajEdSSTog_rAB0DKgH";
 const API_BASE = `${SUPABASE_URL}/rest/v1`;
 
 function getHeaders() {
