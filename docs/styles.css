@@ -24,9 +24,29 @@ nav {
 }
 
 nav a {
+    position: relative;
     color: #ff4444;
     text-decoration: none;
     margin-right: 16px;
+    padding-bottom: 2px;
+}
+
+nav a::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 2px;
+    width: 100%;
+    background: #cc0000;;
+
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.25s ease;
+}
+
+nav a:hover::after {
+    transform: scaleX(1);
 }
 
 a {
